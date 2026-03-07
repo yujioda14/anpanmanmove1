@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Animation</title>
+<style>
+body{
+  margin:0;
+  overflow:hidden;
+  background:black;
+}
+canvas{
+  display:block;
+}
+</style>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stage = 0;
+let img = new Image();
+
+img.src = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...省略...";
+/* ↑ここには長いBase64文字列が入ります。
+（この回答では表示制限のため省略しています。
+実際に使う場合は完全な文字列を入れてください） */
+
+const size = 380; // 約10cm
+let x = canvas.width/2 - size/2;
+let y = canvas.height/2 - size/2;
+
+let moving = false;
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(stage >= 1){
+    ctx.drawImage(img,x,y,size,size);
+  }
+}
+
+canvas.addEventListener("click",(e)=>{
+
+  if(stage === 0){
+    stage = 1;
+    draw();
+    return;
+  }
+
+  if(stage === 1){
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if(mx >= x && mx <= x+size && my >= y && my <= y+size){
+      startRandomMove();
+    }
+  }
+
+});
+
+function startRandomMove(){
+
+  if(moving) return;
+
+  moving = true;
+
+  const start = Date.now();
+
+  function move(){
+
+    const now = Date.now();
+
+    if(now - start > 5000){
+      moving = false;
+      return;
+    }
+
+    x += (Math.random()-0.5)*40;
+    y += (Math.random()-0.5)*40;
+
+    x = Math.max(0,Math.min(canvas.width-size,x));
+    y = Math.max(0,Math.min(canvas.height-size,y));
+
+    draw();
+
+    requestAnimationFrame(move);
+  }
+
+  move();
+}
+
+draw();
+
+</script>
+</body>
+</html>
