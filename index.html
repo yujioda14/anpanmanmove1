@@ -2,20 +2,21 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Canvas Character</title>
+<title>Canvas Move</title>
 
 <style>
 body{
- margin:0;
- background:black;
- overflow:hidden;
+margin:0;
+background:black;
+overflow:hidden;
 }
 canvas{
- display:block;
+display:block;
 }
 </style>
 
 </head>
+
 <body>
 
 <canvas id="canvas"></canvas>
@@ -29,9 +30,9 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const img = new Image();
-img.src = "anpanman.jpg";
+img.src = "anpanman.jpg";  // 同じフォルダの画像
 
-const size = 380; // 約10cm
+const size = 380;
 
 let x = canvas.width/2 - size/2;
 let y = canvas.height/2 - size/2;
@@ -39,84 +40,94 @@ let y = canvas.height/2 - size/2;
 let vx = 0;
 let vy = 0;
 
-let stage = 0;
+let visible = false;
 let moving = false;
 
 function draw(){
 
- ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
- if(stage >= 1){
-  ctx.drawImage(img,x,y,size,size);
- }
+if(visible){
+ctx.drawImage(img,x,y,size,size);
+}
 
 }
 
 canvas.addEventListener("click",(e)=>{
 
- if(stage === 0){
+if(!visible){
 
-  stage = 1;
-  draw();
-  return;
+visible = true;
+startMove();
+return;
 
- }
+}
 
- if(stage === 1){
+const rect = canvas.getBoundingClientRect();
+const mx = e.clientX - rect.left;
+const my = e.clientY - rect.top;
 
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
+if(mx > x && mx < x+size && my > y && my < y+size){
 
-  if(mx > x && mx < x+size && my > y && my < y+size){
+startMove();
 
-   startMove();
-
-  }
-
- }
+}
 
 });
 
 function startMove(){
 
- if(moving) return;
+if(moving) return;
 
- moving = true;
+moving = true;
 
- vx = (Math.random()*10)-5;
- vy = (Math.random()*10)-5;
+vx = (Math.random()*4)+1;
+vy = (Math.random()*4)+1;
 
- const start = Date.now();
+if(Math.random()<0.5) vx *= -1;
+if(Math.random()<0.5) vy *= -1;
 
- function animate(){
+const start = Date.now();
 
-  let now = Date.now();
+function animate(){
 
-  if(now - start > 5000){
-   moving = false;
-   return;
-  }
+let now = Date.now();
 
-  x += vx;
-  y += vy;
+if(now - start > 5000){
+moving = false;
+return;
+}
 
-  // 壁反射
-  if(x < 0 || x + size > canvas.width){
-   vx *= -1;
-  }
+x += vx;
+y += vy;
 
-  if(y < 0 || y + size > canvas.height){
-   vy *= -1;
-  }
+if(x < 0){
+x = 0;
+vx *= -1;
+}
 
-  draw();
+if(x + size > canvas.width){
+x = canvas.width - size;
+vx *= -1;
+}
 
-  requestAnimationFrame(animate);
+if(y < 0){
+y = 0;
+vy *= -1;
+}
 
- }
+if(y + size > canvas.height){
+y = canvas.height - size;
+vy *= -1;
+}
 
- animate();
+draw();
+
+requestAnimationFrame(animate);
+
+}
+
+animate();
 
 }
 
